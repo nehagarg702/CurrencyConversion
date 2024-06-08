@@ -9,18 +9,20 @@ import com.example.currencyconversion.model.CurrencyRate
 import com.example.currencyconversion.network.NetworkResult
 import com.example.currencyconversion.repository.CurrencyConversionRepository
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 
 class CurrencyConversionViewModel(private var currencyConversionRepository: CurrencyConversionRepository)
     : ViewModel(){
 
-    private val _baseCurrency = mutableStateOf(Currency(""))
-    val baseCurrency : State<Currency>
+    private val _baseCurrency = MutableStateFlow(Currency(""))
+    val baseCurrency : StateFlow<Currency>
         get() = _baseCurrency
 
-    private val _amount = mutableStateOf("0")
-    val amount: State<String>
+    private val _amount = MutableStateFlow("0")
+    val amount: StateFlow<String>
         get() = _amount
 
     val currencyList: State<NetworkResult<List<Currency>>>
@@ -60,8 +62,9 @@ class CurrencyConversionViewModel(private var currencyConversionRepository: Curr
                         0.0)
                 )
             }
+            _convertedCurrencyRateList.value = currencyRateListData
         }
-        else {
+        else if(amount.length <= 15) {
             _amount.value = NumberFormat.getNumberInstance().format(amount.replace(",","").toDouble())
             currencyRateList.value.data?.map {
                 currencyRateListData.add(
@@ -71,8 +74,8 @@ class CurrencyConversionViewModel(private var currencyConversionRepository: Curr
                     )
                 )
             }
+            _convertedCurrencyRateList.value = currencyRateListData
         }
-        _convertedCurrencyRateList.value = currencyRateListData
     }
 
     fun setBaseCurrency(currency: Currency) {
